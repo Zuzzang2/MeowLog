@@ -2,20 +2,91 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* 기본 값 */
+/* :root {
+  --background: #f5f5f5;
+  --foreground: #000000;
+} */
 
-@media (prefers-color-scheme: dark) {
+/* 다크모드일 경우 새 값으로 덮어씌움 */
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
-body {
+/* body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+} */
+
+/* 테두리 곡선 0.5rem으로 통일 */
+
+/* Calendar 컨테이너 */
+.react-calendar {
+  @apply rounded-lg shadow-lg border border-gray-300 p-4;
+  width: 100% !important;
+  max-width: 580px !important;
+  padding-bottom: 30px !important;
+}
+
+.react-calendar__navigation {
+  justify-content: center !important;
+}
+
+/* 년/월 상단 네비게이션 칸 크기 줄이기 */
+.react-calendar__navigation__label {
+  flex-grow: 0 !important;
+}
+
+.react-calendar__navigation button {
+  @apply font-bold text-lg p-2 rounded-lg hover:bg-blue-100;
+}
+
+/* 요일 밑줄 제거 */
+.react-calendar__month-view__weekdays abbr {
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.react-calendar__month-view__weekdays__weekday--weekend abbr[title="일요일"] {
+  color: red;
+}
+
+.react-calendar__month-view__weekdays__weekday--weekend abbr[title="토요일"] {
+  color: blue;
+}
+
+/* 해당일 스타일 */
+/* .react-calendar__tile--now {
+  background-color: white !important;
+  border: 2px solid lightgray !important;
+  border-radius: 0.8rem !important;
+} */
+
+.react-calendar__month-view__weekdays {
+  @apply text-gray-500 font-semibold;
+}
+
+.react-calendar__month-view__days__day--weekend {
+  color: black !important;
+}
+
+/* 날짜 타일 스타일 */
+.react-calendar__tile {
+  @apply p-2 text-center rounded-lg hover:bg-gray-200;
+  padding: 20px !important;
+  font-size: 1rem !important;
+}
+
+/* 선택된 날짜 */
+.react-calendar__tile--active {
+  @apply bg-blue-500 text-white font-bold;
+}
+
+/* 오늘 날짜 강조 */
+.react-calendar__tile--now {
+  @apply border-2 border-green-500;
 }
