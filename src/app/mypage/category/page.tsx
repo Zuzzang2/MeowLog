@@ -8,37 +8,37 @@ export default function Category() {
     useCategoryStore();
   const [isAdding, setIsAdding] = useState(false); // ✅ 카테고리 추가 중인지 여부
   const [newCategory, setNewCategory] = useState(""); // ✅ 새 카테고리 입력값 저장
-  const [editingCategory, setEditingCategory] = useState<string | null>(null); // ✅ 현재 수정 중인 카테고리
-  const [editedCategoryName, setEditedCategoryName] = useState(""); // ✅ 수정 중인 카테고리 입력값
+  const [editingCategory, setEditingCategory] = useState<{
+    oldName: string;
+    newName: string;
+  } | null>(null); // ✅ 수정 중인 카테고리
 
-  // ✅ 새 카테고리 저장 함수
+  // 수정버튼 누르기 전 -> 아직 setEditingCategory(...)을 실행하지 않았으므로 editingCategory === null
+  // 수정버튼 누른 후 -> editingCategory가 { name: category }로 변경. 이후에 editingCategory !== null 상태가 됨
+  // 완료 / 취소 버튼 눌렀을 때 -> 다시 null로 설정
+
+  // ✅ 새 카테고리 저장 ///////공백일 시 경고 문구 만들기
   const handleAddCategory = () => {
-    if (newCategory.trim() !== "") {
-      addCategory(newCategory); // ✅ Zustand 상태에 추가
-      setNewCategory(""); // 입력값 초기화
-      setIsAdding(false); // 입력창 닫기
+    const trimmedCategory = newCategory.trim();
+    if (trimmedCategory) {
+      addCategory(trimmedCategory);
+      setNewCategory("");
+      setIsAdding(false);
     }
   };
-  // ✅ 취소 버튼 클릭 시 입력창 닫기
-  const handleCancel = () => {
-    setIsAdding(false);
-    setNewCategory(""); //입력값 초기화
-  };
 
-  // ✅ 카테고리 수정 적용
-  const handleEditCategory = (oldCategory: string) => {
-    if (editedCategoryName.trim() !== "") {
-      editCategory(oldCategory, editedCategoryName); // ✅ Zustand 상태 업데이트
+  // ✅ 카테고리 수정 저장
+  const handleEditCategory = () => {
+    if (editingCategory && editingCategory.newName.trim() !== "") {
+      editCategory(editingCategory.oldName, editingCategory.newName); // 기존 -> 새로운 값으로 변경
       setEditingCategory(null); // 수정 모드 종료
     }
   };
-
   return (
     <div className="w-full">
       <p>설명설명설명설명설명</p>
       <div className="border w-full p-4">
         {/* 카테고리 리스트 */}
-
         {categoryList.map((category, index) => (
           //✅ category = categoryList배열의 각 항목을 의미
           <div
@@ -46,15 +46,18 @@ export default function Category() {
             className={`flex justify-between flex-row items-center h-[60px] px-2 border cursor-pointer
              `}
           >
-            {editingCategory === category ? (
+            {editingCategory?.oldName === category ? (
               // ✅ 수정 중이면 input 표시
               <input
                 type="text"
-                value={editedCategoryName}
-                onChange={(e) => setEditedCategoryName(e.target.value)}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && handleEditCategory(category)
+                value={editingCategory.newName}
+                onChange={(e) =>
+                  setEditingCategory({
+                    ...editingCategory,
+                    newName: e.target.value,
+                  })
                 }
+                onKeyDown={(e) => e.key === "Enter" && handleEditCategory()}
                 className="border p-2"
                 autoFocus
               />
@@ -64,10 +67,10 @@ export default function Category() {
             )}
             {/* ✅ 수정 및 삭제 버튼 */}
             <div className="flex gap-2">
-              {editingCategory === category ? (
+              {editingCategory?.oldName === category ? (
                 // ✅ 수정 중일 때 '확인' 버튼
                 <button
-                  onClick={() => handleEditCategory(category)}
+                  onClick={handleEditCategory}
                   className="border px-2 py-1 bg-green-500 text-white rounded"
                 >
                   확인
@@ -76,8 +79,10 @@ export default function Category() {
                 // ✅ 수정 버튼
                 <button
                   onClick={() => {
-                    setEditingCategory(category); // ✅ 수정 모드 활성화
-                    setEditedCategoryName(category); // ✅ 기존 카테고리명 입력
+                    setEditingCategory({
+                      oldName: category,
+                      newName: category,
+                    });
                   }}
                   className="border px-2 py-1 bg-blue-500 text-white rounded"
                 >
@@ -110,7 +115,10 @@ export default function Category() {
               autoFocus
             />
             <div className="flex-center flex-row gap-2">
-              <button className="border px-4 py-2" onClick={handleCancel}>
+              <button
+                className="border px-4 py-2"
+                onClick={() => setIsAdding(false)}
+              >
                 취소
               </button>
               <button className="border px-4 py-2" onClick={handleAddCategory}>
