@@ -7,31 +7,46 @@ import moment from "moment";
 import "moment/locale/ko"; // 한국어 로케일 추가
 import ProgressBar from "@/components/ProgressBar";
 import { useCategoryStore } from "@/store/dataStore";
+import TimePicker from "@/components/TimePicker";
+import Link from "next/link";
 
 moment.locale("ko"); // 기본 로케일을 한국어로 설정
 
 export default function Main() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isOpen, setIsOpen] = useState(false);
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const categoryRef = useRef<HTMLDivElement>(null);
+  const { categoryList } = useCategoryStore();
 
-  // ✅ zustand에서 상태 가져오기
-  const { categoryList, selectedCategories, setSelectedCategories } =
-    useCategoryStore();
+  // ✅ 각 카테고리별로 TimePicker가 보이는지 여부를 관리하는 상태
+  const [visibleTimePicker, setVisibleTimePicker] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  // ✅ 특정 카테고리의 TimePicker를 표시하는 함수 (추가 버튼 클릭 시)
+  const showTimePicker = (category: string) => {
+    setVisibleTimePicker((prev) => ({
+      ...prev, //기존 상태 유지
+      [category]: true, // 선택한 카테고리만 TimePicker를 보이게 설정
+    }));
+  };
+  //카테고리1과 카테고리2에서 실행하면:
+  //"카테고리1": true,
+  //"카테고리2": true
+
+  // ✅ 특정 카테고리의 TimePicker를 숨기는 함수 (취소 버튼 클릭 시)
+  const hideTimePicker = (category: string) => {
+    setVisibleTimePicker((prev) => ({
+      ...prev,
+      [category]: false, // TimePicker를 숨김
+    }));
+  };
 
   //✅ 모달 외부 클릭 감지 (메뉴 +카테고리)
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false);
-      }
-      if (
-        categoryRef.current &&
-        !categoryRef.current.contains(event.target as Node)
-      ) {
-        setIsCategoryOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -43,7 +58,7 @@ export default function Main() {
   };
   return (
     <main className="flex justify-center w-[1100px] mx-auto pt-6 gap-[24px]">
-      <div className="grow-[580] max-w-[580px] h-[1000px] flex-col gap-4">
+      <div className="grow-[580] max-w-[580px] flex-col gap-4">
         <div className="flex-center mb-6">
           <Calendar
             onClickDay={handleDateClick}
@@ -64,7 +79,7 @@ export default function Main() {
           <div>급여량</div>
         </div>
       </div>
-      <div className="grow-[495] h-[1000px] border rounded-lg">
+      <div className="grow-[495] border rounded-lg">
         <div className="flex justify-between item-center border-b-2 p-4">
           <div className="flex gap-2 text-2xl font-bold">
             <p className="flex items-center">
@@ -94,45 +109,39 @@ export default function Main() {
             </button>
 
             {isOpen && (
-              <ul className="flex-center flex-col gap-[2px] absolute right-0 min-w-max top-[33px] p-1 z-10 bg-custom-gray rounded-lg">
-                <li className="cursor-pointer">카테고리 추가</li>
-                <li className="cursor-pointer">카테고리 수정</li>
-              </ul>
-            )}
-          </div>
-        </div>
-
-        {/* ✅ "추가하기" 버튼 */}
-        <div className="p-4">
-          <div className="inline-block" ref={categoryRef}>
-            <button
-              onClick={() => setIsCategoryOpen((prev) => !prev)}
-              className="p-2 bg-blue-500 text-white rounded"
-            >
-              {selectedCategories ? selectedCategories : "추가하기"}
-            </button>
-
-            {/* ✅ 카테고리 목록 (버튼 클릭 시 토글) */}
-            {isCategoryOpen && (
-              <div className="mt-2 border rounded-lg p-2">
-                {categoryList.map((category, index) => (
-                  <p
-                    key={index}
-                    onClick={() => {
-                      setSelectedCategories(category); // ✅ 선택한 카테고리 zustand에 저장
-                      setIsCategoryOpen(false); // ✅ 선택 후 목록 닫기
-                    }}
-                    className="cursor-pointer p-2 hover:bg-gray-200 rounded"
-                  >
-                    {category}
-                  </p>
-                ))}
+              <div className="flex-center flex-col gap-[2px] absolute right-0 min-w-max top-[33px] p-1 z-10 bg-custom-gray rounded-lg">
+                <div className="cursor-pointer">
+                  <Link href="/mypage">카테고리 관리</Link>
+                </div>
               </div>
             )}
           </div>
-
-          <div></div>
         </div>
+
+        {categoryList.map((category, index) => (
+          <div className="flex flex-col p-4">
+            <div className="my-2">
+              <a className="h-[200px] bg-blue-500 text-white rounded">
+                {category}
+              </a>
+            </div>
+            <div>
+              <button
+                className="border"
+                onClick={() => showTimePicker(category)}
+              >
+                추가
+              </button>
+            </div>
+
+            {/* ✅ 추가 버튼을 누르면 보이고, 취소 버튼을 누르면 사라짐 */}
+            {visibleTimePicker[category] && (
+              <div className="mt-2">
+                <TimePicker onCancel={() => hideTimePicker(category)} />
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </main>
   );
