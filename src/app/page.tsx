@@ -5,9 +5,9 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import moment from "moment";
 import "moment/locale/ko"; // 한국어 로케일 추가
-import ProgressBar from "@/components/ProgressBar";
+import ProgressBar from "@/components/progress/ProgressBar";
 import { useCategoryStore } from "@/store/dataStore";
-import TimePicker from "@/components/TimePicker";
+import TimePicker from "@/components/time/TimePicker";
 import Link from "next/link";
 
 moment.locale("ko"); // 기본 로케일을 한국어로 설정
@@ -18,31 +18,28 @@ export default function Main() {
   const menuRef = useRef<HTMLDivElement>(null);
   const { categoryList } = useCategoryStore();
 
-  // ✅ 각 카테고리별로 TimePicker가 보이는지 여부를 관리하는 상태
-  const [visibleTimePicker, setVisibleTimePicker] = useState<{
-    [key: string]: boolean;
-  }>({});
+  // ✅ 각 카테고리별로 여러 개의 TimePicker를 관리하는 상태. timePickersByCategory= TimePicker들의 ID(숫자 배열)를 저장하는 객체 상태
+  const [timePickersByCategory, setTimePickersByCategory] = useState<{
+    [key: string]: number[]; //key: 카테고리 이름, value: 타임피커의 id 배열
+  }>({}); //초기상태를 {}빈객체로 설정
 
-  // ✅ 특정 카테고리의 TimePicker를 표시하는 함수 (추가 버튼 클릭 시)
-  const showTimePicker = (category: string) => {
-    setVisibleTimePicker((prev) => ({
-      ...prev, //기존 상태 유지
-      [category]: true, // 선택한 카테고리만 TimePicker를 보이게 설정
+  // ✅ 특정 카테고리의 TimePicker를 추가하는 함수 -> 기존 timePickersByCategory를 유지하면서, 새로운 타임피커 ID를 추가
+  const addTimePicker = (category: string) => {
+    setTimePickersByCategory((prev) => ({
+      ...prev, //기존 상태 복사
+      [category]: [...(prev[category] || []), Date.now()], // prev[category] || [] → 기존에 추가된 타임피커가 없으면 빈 배열을 사용. Date.now() → 고유한 ID를 생성하여 TimePicker 추가
     }));
   };
-  //카테고리1과 카테고리2에서 실행하면:
-  //"카테고리1": true,
-  //"카테고리2": true
 
-  // ✅ 특정 카테고리의 TimePicker를 숨기는 함수 (취소 버튼 클릭 시)
-  const hideTimePicker = (category: string) => {
-    setVisibleTimePicker((prev) => ({
+  // ✅ 특정 TimePicker를 삭제하는 함수. 특정 타임피커의 취소 버튼 클릭 시 해당 타임피커의 id를 찾아서 제거. filter()를 사용하여 선택한 ID를 제외한 배열을 다시 상태로 설정
+  const removeTimePicker = (category: string, id: number) => {
+    setTimePickersByCategory((prev) => ({
       ...prev,
-      [category]: false, // TimePicker를 숨김
+      [category]: prev[category].filter((pickerId) => pickerId !== id), // 해당 id만 삭제
     }));
   };
 
-  //✅ 모달 외부 클릭 감지 (메뉴 +카테고리)
+  //✅ 모달 외부 클릭 감지 (메뉴)
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -73,11 +70,7 @@ export default function Main() {
             showNeighboringMonth={false} // 전달, 다음달 날짜 숨기기
           ></Calendar>
         </div>
-        <div className="flex-center flex-col gap-4 border rounded-lg p-4">
-          <div>음수량</div>
-          <ProgressBar></ProgressBar>
-          <div>급여량</div>
-        </div>
+        <ProgressBar></ProgressBar>
       </div>
       <div className="grow-[495] border rounded-lg">
         <div className="flex justify-between item-center border-b-2 p-4">
@@ -126,20 +119,22 @@ export default function Main() {
               </a>
             </div>
             <div>
+              {/* ✅ 추가 버튼 */}
               <button
-                className="border"
-                onClick={() => showTimePicker(category)}
+                className="border mt-2 p-2"
+                onClick={() => addTimePicker(category)}
               >
                 추가
               </button>
             </div>
 
-            {/* ✅ 추가 버튼을 누르면 보이고, 취소 버튼을 누르면 사라짐 */}
-            {visibleTimePicker[category] && (
-              <div className="mt-2">
-                <TimePicker onCancel={() => hideTimePicker(category)} />
-              </div>
-            )}
+            {/* ✅ 추가된 TimePicker 목록. timePickersByCategory[category] → 해당 카테고리의 모든 타임피커 ID 배열을 가져옴 -> map()을 사용하여 해당 ID를 가진 타임피커 컴포넌트를 동적으로 생성 */}
+            {timePickersByCategory[category]?.map((id) => (
+              <TimePicker
+                key={id}
+                onCancel={() => removeTimePicker(category, id)}
+              />
+            ))}
           </div>
         ))}
       </div>
