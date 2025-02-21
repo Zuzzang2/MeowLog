@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 
-export default function TimePicker({ onCancel }: { onCancel: () => void }) {
+interface TimePickerProps {
+  onCancel: () => void;
+}
+
+export default function TimePicker({ onCancel }: TimePickerProps) {
   const [meridian, setMeridian] = useState<string | null>(null);
   const [hour, setHour] = useState<string | null>(null);
   const [minute, setMinute] = useState<string | null>(null);
