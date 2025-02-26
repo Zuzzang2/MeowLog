@@ -14,7 +14,7 @@ export const useCategoryStore = create<CategoryStore>((set) => ({
   editCategory: (oldCategory, newCategory) =>
     set((state) => ({
       categoryList: state.categoryList.map(
-        (category) => (category === oldCategory ? newCategory : category)
+        (category) => (category === oldCategory ? newCategory : category),
         //카테고리1 === 카테고리1 ture -> 수정된 카테고리로 변경
         //카테고리2 === 카테고리1 false -> 기존 값 유지
       ),

@@ -41,7 +41,7 @@ export default function TimePicker({ onCancel }: TimePickerProps) {
 
       <select value={hour || ""} onChange={(e) => setHour(e.target.value)}>
         {Array.from({ length: 12 }, (_, i) =>
-          String(i + 1).padStart(2, "0")
+          String(i + 1).padStart(2, "0"),
         ).map((h) => (
           <option key={h} value={h}>
             {h}시
@@ -51,7 +51,7 @@ export default function TimePicker({ onCancel }: TimePickerProps) {
 
       <select value={minute || ""} onChange={(e) => setMinute(e.target.value)}>
         {Array.from({ length: 6 }, (_, i) =>
-          String(i * 10).padStart(2, "0")
+          String(i * 10).padStart(2, "0"),
         ).map((m) => (
           <option key={m} value={m}>
             {m}분

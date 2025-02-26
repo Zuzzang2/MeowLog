@@ -27,7 +27,7 @@ export const useTimeStore = create<TimeStore>((set) => ({
       timePickersByCategory: {
         ...state.timePickersByCategory,
         [category]: state.timePickersByCategory[category].filter(
-          (pickerId) => pickerId !== id
+          (pickerId) => pickerId !== id,
         ),
       },
     })),
