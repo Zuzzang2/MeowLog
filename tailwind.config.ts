@@ -26,6 +26,9 @@ export default {
           "justify-content": "center",
           "align-items": "center",
         },
+        select: {
+          outline: "none",
+        },
       });
     }),
   ],
