@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useCategoryStore } from "@/store/dataStore";
+import { useCategoryStore } from "@/store/categoryStore";
 
 export default function Category() {
   const { categoryList, editCategory, deleteCategory, addCategory } =
