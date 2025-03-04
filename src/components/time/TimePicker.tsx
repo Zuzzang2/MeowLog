@@ -41,9 +41,10 @@ export default function TimePicker({ category, onCancel }: TimePickerProps) {
   return (
     <div className="flex justify-between items-center gap-2 border p-2 rounded-lg">
       {isConfirmed ? (
-        <p className="">
+        <p className="mx-2">
           {meridian === "AM" ? "오전" : "오후"} {hour}시 {minute}분
           {inputText && <span>{inputText}</span>}
+          {<span>{unitByCategory[category]}</span>}
         </p>
       ) : (
         <div className="flex items-center gap-2 h-[40px]">
