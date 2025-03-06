@@ -21,11 +21,11 @@ export default function TimePickerList() {
           </div>
           <div>
             {/* 타임피커 목록 렌더링. timePickersByCategory[category] → 해당 카테고리의 모든 타임피커 ID 배열을 가져옴 -> map()을 사용하여 해당 ID를 가진 타임피커 컴포넌트를 동적으로 생성*/}
-            {timePickersByCategory[category]?.map((id) => (
+            {timePickersByCategory[category]?.map((picker) => (
               <TimePicker
-                key={id}
+                key={picker.id}
                 category={category}
-                onCancel={() => removeTimePicker(category, id)}
+                onCancel={() => removeTimePicker(category, picker.id)}
               />
             ))}
 
