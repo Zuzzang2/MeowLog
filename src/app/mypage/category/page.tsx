@@ -13,6 +13,7 @@ export default function Category() {
   const [editingCategory, setEditingCategory] = useState<{
     oldName: string;
     newName: string;
+    unit: string;
   } | null>(null);
 
   // 수정버튼 누르기 전 -> 아직 setEditingCategory(...)을 실행하지 않았으므로 editingCategory === null
@@ -34,6 +35,8 @@ export default function Category() {
   const handleEditCategory = () => {
     if (editingCategory && editingCategory.newName.trim() !== "") {
       editCategory(editingCategory.oldName, editingCategory.newName); // 기존 -> 새로운 값으로 변경
+      // ✅ 기존 유닛 유지, 없으면 새 유닛 저장
+      setUnitForCategory(editingCategory.newName, editingCategory.unit);
       setEditingCategory(null);
     }
   };
@@ -50,18 +53,36 @@ export default function Category() {
           >
             {editingCategory?.oldName === category ? (
               // 수정 중이면 input 표시
-              <input
-                type="text"
-                value={editingCategory.newName}
-                onChange={(e) =>
-                  setEditingCategory({
-                    ...editingCategory,
-                    newName: e.target.value,
-                  })
-                }
-                className="border p-2"
-                autoFocus
-              />
+              <>
+                <input
+                  type="text"
+                  value={editingCategory.newName}
+                  onChange={(e) =>
+                    setEditingCategory({
+                      ...editingCategory,
+                      newName: e.target.value,
+                    })
+                  }
+                  className="border p-2"
+                  autoFocus
+                />
+                <select
+                  className="border p-2 rounded"
+                  value={editingCategory.unit}
+                  onChange={(e) =>
+                    setEditingCategory({
+                      ...editingCategory,
+                      unit: e.target.value, // ✅ 유닛 상태 업데이트
+                    })
+                  } // Zustand에서 선택된 값 업데이트
+                >
+                  {unitOptions.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+              </>
             ) : (
               // 기본 상태에서 카테고리명 표시
               <div className="flex gap-4">
@@ -86,6 +107,7 @@ export default function Category() {
                     setEditingCategory({
                       oldName: category,
                       newName: category,
+                      unit: unitByCategory[category] || "선택",
                     });
                   }}
                   className="border px-2 py-1 bg-blue-500 text-white rounded"
