@@ -5,13 +5,13 @@ interface TimeEntry {
   meridian: "AM" | "PM";
   hour: string;
   minute: string;
-  inputText: string;
+  inputText: number | "";
   unit: string;
   isConfirmed: boolean;
 }
 
 interface TimeStore {
-  timePickersByCategory: { [key: string]: TimeEntry[] }; // 카테고리별 타임피커 ID 배열
+  timePickersByCategory: { [category: string]: TimeEntry[] }; // 카테고리별 타임피커 ID 배열
   addTimePicker: (category: string) => void;
   removeTimePicker: (category: string, id: number) => void;
   updateTimePicker: (
@@ -19,10 +19,36 @@ interface TimeStore {
     id: number,
     data: Partial<TimeEntry>
   ) => void;
+  goalByCategory: { [category: string]: number };
+  setGoal: (category: string, goal: number) => void;
+  selectedCategories: string[];
+  selectCategory: (category: string) => void;
+  deselectCategory: (category: string) => void;
 }
 
 export const useTimeStore = create<TimeStore>((set) => ({
   timePickersByCategory: {},
+  goalByCategory: {},
+  selectedCategories: [],
+
+  setGoal: (category, goal) =>
+    set((state) => ({
+      goalByCategory: { ...state.goalByCategory, [category]: goal },
+    })),
+
+  // 카테고리 선택
+  selectCategory: (category) =>
+    set((state) => ({
+      selectedCategories: [...state.selectedCategories, category],
+    })),
+
+  // 카테고리 선택 해제
+  deselectCategory: (category) =>
+    set((state) => ({
+      selectedCategories: state.selectedCategories.filter(
+        (c) => c !== category
+      ),
+    })),
 
   // 특정 카테고리의 타임피커 추가
   addTimePicker: (category) =>
@@ -68,7 +94,7 @@ export const useTimeStore = create<TimeStore>((set) => ({
       };
     }),
 
-  // ✅ 특정 카테고리의 타임피커 삭제
+  // 특정 카테고리의 타임피커 삭제
   removeTimePicker: (category, id) =>
     set((state) => ({
       timePickersByCategory: {
@@ -79,14 +105,24 @@ export const useTimeStore = create<TimeStore>((set) => ({
       },
     })),
 
-  // ✅ 특정 타임피커 업데이트 (시간 및 유닛 값 저장)
+  // 특정 타임피커 업데이트 (시간 및 유닛 값 저장)
   updateTimePicker: (category, id, data) =>
-    set((state) => ({
-      timePickersByCategory: {
-        ...state.timePickersByCategory,
-        [category]: state.timePickersByCategory[category].map((picker) =>
-          picker.id === id ? { ...picker, ...data } : picker
-        ),
-      },
-    })),
+    set((state) => {
+      if (data.inputText === "" || data.inputText === undefined) return state;
+
+      return {
+        timePickersByCategory: {
+          ...state.timePickersByCategory,
+          [category]: state.timePickersByCategory[category].map((picker) =>
+            picker.id === id
+              ? {
+                  ...picker,
+                  ...data,
+                  inputText: data.inputText ?? picker.inputText, // undefined 방지
+                }
+              : picker
+          ),
+        },
+      };
+    }),
 }));

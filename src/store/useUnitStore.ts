@@ -1,5 +1,10 @@
 import { create } from "zustand";
 
+interface Unit {
+  id: string;
+  name: string;
+}
+
 interface UnitStore {
   unitOptions: string[];
   unitByCategory: { [category: string]: string };
