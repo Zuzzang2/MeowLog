@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useTimeStore } from "./useTimeStore";
 
 type CategoryStore = {
   categoryList: string[];
@@ -14,6 +15,8 @@ export const useCategoryStore = create<CategoryStore>((set) => ({
   editCategory: (oldName, newName) =>
     set((state) => {
       if (!state.categoryList.includes(oldName)) return state;
+
+      useTimeStore.getState().editCategoryName(oldName, newName);
 
       return {
         categoryList: state.categoryList.map((category) =>

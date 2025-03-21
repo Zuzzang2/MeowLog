@@ -24,6 +24,7 @@ interface TimeStore {
   selectedCategories: string[];
   selectCategory: (category: string) => void;
   deselectCategory: (category: string) => void;
+  editCategoryName: (oldName: string, newName: string) => void;
 }
 
 export const useTimeStore = create<TimeStore>((set) => ({
@@ -123,6 +124,34 @@ export const useTimeStore = create<TimeStore>((set) => ({
               : picker
           ),
         },
+      };
+    }),
+
+  editCategoryName: (oldName: string, newName: string) =>
+    set((state) => {
+      const updatedTimePickers = { ...state.timePickersByCategory };
+      const updatedGoals = { ...state.goalByCategory };
+      const updatedSelected = [...state.selectedCategories];
+
+      if (oldName in updatedTimePickers) {
+        updatedTimePickers[newName] = updatedTimePickers[oldName];
+        delete updatedTimePickers[oldName];
+      }
+
+      if (oldName in updatedGoals) {
+        updatedGoals[newName] = updatedGoals[oldName];
+        delete updatedGoals[oldName];
+      }
+
+      const selectedIndex = updatedSelected.indexOf(oldName);
+      if (selectedIndex !== -1) {
+        updatedSelected[selectedIndex] = newName;
+      }
+
+      return {
+        timePickersByCategory: updatedTimePickers,
+        goalByCategory: updatedGoals,
+        selectedCategories: updatedSelected,
       };
     }),
 }));
